@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Almarai Juice – Dive into the flavours</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff3d6;--ink:#2b1400;
+  --c1:#e8590c;--c2:#b8430a;--f1:#ffc15e;--f2:#f08a00;
+  --display:"Bricolage Grotesque","Arial Black",system-ui,sans-serif;
+  --body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:var(--body);font-size:1.05rem;line-height:1.55;background:var(--bg);color:var(--ink);transition:color .6s ease .45s,background-color 1.4s ease}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#back{z-index:0}#front{z-index:2}
+.stage{position:fixed;inset:0;z-index:1;display:flex;align-items:center;justify-content:flex-end;padding:0 9vw;pointer-events:none}
+#wrap{width:min(30vw,260px);min-width:150px;aspect-ratio:220/380;pointer-events:auto;cursor:pointer}
+.bob{width:100%;height:100%;animation:bob 5s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes bob{0%,100%{transform:translateY(-4px) rotate(-2.5deg)}50%{transform:translateY(12px) rotate(2.5deg)}}
+#carton{width:100%;height:100%;transform-origin:50% 88%;filter:drop-shadow(0 28px 22px rgba(0,0,0,.28))}
+#carton.jig{animation:jig .8s cubic-bezier(.3,1.6,.5,1)}
+@keyframes jig{0%{transform:scale(.88,1.1)}40%{transform:scale(1.1,.9)}70%{transform:scale(.97,1.03)}100%{transform:none}}
+svg .c1{fill:var(--c1);transition:fill 1s}svg .c2{fill:var(--c2);transition:fill 1s}
+svg .f1{stop-color:var(--f1);transition:stop-color 1s}svg .f2{stop-color:var(--f2);transition:stop-color 1s}
+#segs,#seeds,#leaf{opacity:0;transition:opacity .6s,transform .8s cubic-bezier(.2,1.4,.4,1);transform:scale(.7);transform-box:fill-box;transform-origin:center}
+svg.segs #segs,svg.seeds #seeds,svg.leaf #leaf{opacity:1;transform:none}
+#spinner{animation:spin 30s linear infinite;transform-origin:0 0}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{position:relative;z-index:3;pointer-events:none}
+section{min-height:100svh;display:flex;align-items:center;padding:12vh 8vw 12vh 9vw}
+.copy{max-width:min(46ch,52vw);pointer-events:auto}
+h1,h2{font-family:var(--display);font-weight:800;line-height:.95;margin:0 0 1rem;letter-spacing:-.02em}
+h1{font-size:clamp(2.6rem,7.5vw,6rem)}h2{font-size:clamp(2.8rem,8vw,6.2rem)}
+.ch{display:inline-block;opacity:0;transform:translateY(70%) rotate(10deg) scale(.8);filter:blur(6px);
+  transition:opacity .6s ease,transform .8s cubic-bezier(.2,1.5,.4,1),filter .6s ease;transition-delay:calc(var(--i)*55ms + .25s)}
+section.on .ch{opacity:1;transform:none;filter:none}
+.lede{font-size:1.2rem;max-width:34ch}
+.intro{opacity:0;transform:translateY(18px);transition:opacity .8s ease .5s,transform .8s ease .5s}
+section.on .intro{opacity:1;transform:none}
+.hint{margin-top:2rem;font-weight:500;display:inline-block;animation:nudge 1.6s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateY(8px)}}
+.facts{list-style:none;margin:1.6rem 0 0;padding:0;display:grid;gap:.9rem}
+.facts li{position:relative;display:grid;grid-template-columns:7.5rem 1fr;gap:1rem;padding-top:.8rem;opacity:0;transform:translateX(-50px) skewX(-6deg);
+  transition:opacity .7s ease,transform .8s cubic-bezier(.2,1,.3,1)}
+.facts li::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform 1s ease .2s}
+.facts b{font-family:var(--display);font-weight:500}
+section.on .facts li{opacity:1;transform:none}section.on .facts li::before{transform:none}
+section.on .facts li:nth-child(1){transition-delay:.7s}section.on .facts li:nth-child(2){transition-delay:.9s}section.on .facts li:nth-child(3){transition-delay:1.1s}
+nav{position:fixed;z-index:4;left:max(14px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);display:grid;gap:12px}
+nav button{width:14px;height:14px;border-radius:50%;padding:0;cursor:pointer;border:2px solid var(--ink);background:transparent;transition:transform .4s cubic-bezier(.2,1.6,.4,1),background-color .4s,border-color .6s}
+nav button.on{background:var(--ink);transform:scale(1.5)}
+nav button:focus-visible,.cta:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.cta{margin-top:1.6rem;font:inherit;font-weight:500;cursor:pointer;padding:.7rem 1.3rem;border-radius:999px;border:2px solid currentColor;background:transparent;color:inherit;transition:transform .3s cubic-bezier(.2,1.6,.4,1)}
+.cta:hover{transform:scale(1.07) rotate(-2deg)}
+footer{position:relative;z-index:3;padding:4rem 9vw 6rem;font-size:.9rem;opacity:.85}
+::selection{background:var(--c1);color:#fff}
+.feel{margin-top:1.5rem;max-width:34ch;opacity:0;transition:opacity .6s ease 1.2s}
+section.on .feel{opacity:1}
+.feel h3{font:500 1rem var(--display);margin:0 0 .5rem}
+.bar{display:grid;grid-template-columns:4.5rem 1fr;align-items:center;gap:.8rem;margin:.45rem 0}
+.bar i{display:block;position:relative;height:10px;border-radius:99px;background:rgba(0,0,0,.16);overflow:hidden}
+.bar i::after{content:"";position:absolute;left:0;top:0;height:100%;width:var(--v);border-radius:inherit;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform 1.2s cubic-bezier(.2,1.2,.3,1) var(--d)}
+section.on .bar i::after{transform:none}
+#meter{position:fixed;z-index:4;right:max(14px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);width:12px;height:36vh;border:2px solid var(--ink);border-radius:99px;overflow:hidden;transition:border-color .6s ease .45s}
+#mfill{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--ink);transition:height .3s ease-out,background-color .6s ease .45s}
+#next{position:fixed;z-index:4;left:50%;bottom:max(18px,env(safe-area-inset-bottom,0px));translate:-50% 0;margin:0;padding:.55rem 1.1rem;transition:opacity .4s,transform .3s cubic-bezier(.2,1.6,.4,1);animation:nudge2 2s ease-in-out infinite}
+@keyframes nudge2{50%{translate:-50% 6px}}
+#next.hide{opacity:0;pointer-events:none}
+#carton.drop{animation:dropin 1.2s cubic-bezier(.4,0,.6,1)}
+@keyframes dropin{0%{transform:translateY(-110vh) rotate(-25deg)}58%{transform:translateY(0) rotate(4deg)}72%{transform:translateY(26px) scale(1.06,.9)}86%{transform:translateY(-8px) scale(.97,1.04)}100%{transform:none}}
+@media (max-width:700px){
+  .stage{align-items:flex-start;justify-content:center;padding-top:8vh}
+  #wrap{width:40vw}
+  .copy{max-width:100%}
+  section{padding:16vh 9vw 15vh 12vw;align-items:flex-end}
+  .feel{display:none}
+  .facts li{grid-template-columns:6rem 1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;transition-delay:0s!important;animation:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<canvas id="back" aria-hidden="true"></canvas>
+
+<div class="stage" aria-hidden="true">
+  <div id="wrap"><div class="bob"><div id="carton">
+    <svg id="art" class="segs" viewBox="0 0 220 380" width="100%" height="100%">
+      <defs>
+        <linearGradient id="body" x1="0" x2="1"><stop offset="0" stop-color="#fffdf7"/><stop offset=".7" stop-color="#f1eadb"/><stop offset="1" stop-color="#ddd4c0"/></linearGradient>
+        <linearGradient id="side" x1="0" x2="1"><stop offset="0" stop-color="#d8cfba"/><stop offset="1" stop-color="#b3a891"/></linearGradient>
+        <linearGradient id="roof" x1="0" x2="1" y1="1"><stop offset="0" stop-color="#f4eee0"/><stop offset="1" stop-color="#cfc5ae"/></linearGradient>
+        <radialGradient id="fr" cx=".38" cy=".32" r=".8"><stop class="f1" offset="0"/><stop class="f2" offset="1"/></radialGradient>
+        <linearGradient id="gloss" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      </defs>
+      <polygon points="150,70 190,50 190,350 150,372" fill="url(#side)"/>
+      <rect x="30" y="70" width="120" height="302" rx="3" fill="url(#body)"/>
+      <polygon points="90,25 130,5 190,50 150,70" fill="url(#roof)"/>
+      <polygon points="30,70 90,25 150,70" fill="#fffdf7"/>
+      <polyline points="90,25 130,5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx="141" cy="37" rx="15" ry="7" transform="rotate(-24 141 37)" class="c1"/>
+      <ellipse cx="141" cy="34" rx="10" ry="4" transform="rotate(-24 141 34)" fill="#fff" opacity=".35"/>
+      <path d="M30 245 Q60 228 90 245 T150 245 V372 H30Z" class="c1"/>
+      <polygon points="150,245 190,225 190,350 150,372" class="c2"/>
+      <g id="fruit">
+        <circle cx="90" cy="160" r="44" fill="url(#fr)"/><ellipse cx="76" cy="144" rx="14" ry="8" transform="rotate(-35 76 144)" fill="#fff" opacity=".35"/>
+        <g transform="translate(90 160)"><g id="spinner">
+          <g id="segs" stroke="rgba(255,255,255,.6)" stroke-width="2" fill="none"><circle r="37"/><path d="M0-37V37M-37 0H37M-26-26L26 26M26-26L-26 26"/></g>
+          <g id="seeds" fill="rgba(255,255,255,.75)"><circle cx="-14" cy="-10" r="4"/><circle cx="8" cy="-18" r="4"/><circle cx="18" cy="-2" r="4"/><circle cx="10" cy="14" r="4"/><circle cx="-8" cy="18" r="4"/><circle cx="-22" cy="6" r="4"/><circle cx="0" cy="0" r="4"/><circle cx="-4" cy="-30" r="3.5"/><circle cx="26" cy="16" r="3.5"/><circle cx="-26" cy="-14" r="3.5"/></g></g>
+        </g>
+      </g>
+      <g transform="translate(98 118)"><g id="leaf"><path d="M0 0 q12-26 34-22 q-4 22-34 22z" fill="#3f7d20"/><path d="M2-2 Q18-12 30-20" stroke="#8fd05a" fill="none" stroke-width="1.5"/></g></g>
+      <text id="cname" x="90" y="306" text-anchor="middle" font-family="Bricolage Grotesque,Arial Black,sans-serif" font-weight="800" font-size="26" fill="#fff">Juice</text>
+      <text id="ctag" x="90" y="332" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="12" fill="#fff" opacity=".9">Almarai</text>
+      <rect id="glare" x="38" y="76" width="16" height="292" fill="url(#gloss)" opacity=".7"/>
+    </svg>
+  </div></div></div>
+</div>
+
+<canvas id="front" aria-hidden="true"></canvas>
+<nav id="dots" aria-label="Flavours"></nav>
+<div id="meter" aria-hidden="true"><i id="mfill"></i></div>
+<button id="next" class="cta" type="button"></button>
+
+<main>
+  <section data-bg="#fff3d6" data-ink="#2b1400" data-c1="#e8590c" data-c2="#b8430a" data-f1="#ffc15e" data-f2="#f08a00" data-art="segs" data-name="Juice">
+    <div class="copy">
+      <h1 class="split" data-by="word">Dive into the flavours</h1>
+      <p class="lede intro">Scroll down and the juice rises. Five flavours, each with its own colour and a short tasting note. Tap the carton for a splash.</p>
+      <p class="hint intro">Keep scrolling ↓</p>
+    </div>
+  </section>
+
+  <section data-bg="#ff9f1c" data-ink="#2b1400" data-c1="#d9480f" data-c2="#a33508" data-f1="#ffc15e" data-f2="#f08a00" data-art="segs" data-name="Orange" data-feel="75,70,40">
+    <div class="copy">
+      <h2 class="split">Orange</h2>
+      <p class="lede intro">The breakfast classic. Bright, sunny and a little tangy.</p>
+      <ul class="facts">
+        <li><b>Taste</b><span>Sweet citrus with a clean, tangy finish.</span></li>
+        <li><b>Best served</b><span>Ice cold, first thing in the morning.</span></li>
+        <li><b>Goes with</b><span>Eggs, labneh sandwiches, croissants.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section data-bg="#ffd23f" data-ink="#3a2a00" data-c1="#e08600" data-c2="#a85f00" data-f1="#ffe27a" data-f2="#f2a400" data-art="leaf" data-name="Mango" data-feel="90,25,90">
+    <div class="copy">
+      <h2 class="split">Mango</h2>
+      <p class="lede intro">Thick, golden and made for summer afternoons.</p>
+      <ul class="facts">
+        <li><b>Taste</b><span>Rich, tropical and smooth.</span></li>
+        <li><b>Best served</b><span>Chilled, with a squeeze of lime if you like.</span></li>
+        <li><b>Goes with</b><span>Spicy food, grilled chicken, shawarma.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section data-bg="#9ccc3c" data-ink="#12220a" data-c1="#3f7d20" data-c2="#2a5714" data-f1="#c8e86a" data-f2="#6fa82a" data-art="leaf" data-name="Apple" data-feel="70,45,30">
+    <div class="copy">
+      <h2 class="split">Apple</h2>
+      <p class="lede intro">Crisp and light. The easy one to reach for any time of day.</p>
+      <ul class="facts">
+        <li><b>Taste</b><span>Fresh, mildly sweet, orchard-crisp.</span></li>
+        <li><b>Best served</b><span>Very cold, in a lunchbox or on the go.</span></li>
+        <li><b>Goes with</b><span>Sandwiches, biscuits, a quick snack.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section data-bg="#ff8fa3" data-ink="#3a0a1a" data-c1="#c2284f" data-c2="#8f1a3a" data-f1="#ffc2cf" data-f2="#ee6283" data-art="seeds" data-name="Guava" data-feel="80,30,70">
+    <div class="copy">
+      <h2 class="split">Guava</h2>
+      <p class="lede intro">Floral, fragrant and unmistakable. A favourite for a reason.</p>
+      <ul class="facts">
+        <li><b>Taste</b><span>Sweet and perfumed, with a soft tartness.</span></li>
+        <li><b>Best served</b><span>Cold, after a big meal.</span></li>
+        <li><b>Goes with</b><span>Dates, dessert, a long evening.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section data-bg="#8e1236" data-ink="#fff1f4" data-c1="#5c0a22" data-c2="#3c0615" data-f1="#f0587c" data-f2="#a50f3b" data-art="seeds leaf" data-name="Pomegranate" data-feel="45,90,60">
+    <div class="copy">
+      <h2 class="split">Pomegranate</h2>
+      <p class="lede intro">Deep ruby red with a bold, tart bite.</p>
+      <ul class="facts">
+        <li><b>Taste</b><span>Tart, juicy and a little earthy.</span></li>
+        <li><b>Best served</b><span>Cold, in a tall glass.</span></li>
+        <li><b>Goes with</b><span>Rice dishes, grilled meat, salads.</span></li>
+      </ul>
+      <button class="cta" id="top">Back to the start</button>
+    </div>
+  </section>
+</main>
+
+<footer>An independent fan page for Almarai juice flavours. Flavour notes are descriptive, not product specifications. Not affiliated with or endorsed by Almarai.</footer>
+
+<script>
+(function(){
+var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var $=function(s){return document.querySelector(s)};
+var root=document.documentElement,secs=[].slice.call(document.querySelectorAll('section'));
+var cb=$('#back'),cf=$('#front'),b=cb.getContext('2d'),f=cf.getContext('2d');
+var wrap=$('#wrap'),carton=$('#carton'),art=$('#art'),cname=$('#cname'),ctag=$('#ctag');
+var W,H,t=0,sv=0,lastY=scrollY,mx=0,my=0,tx=0,ty=0,poolY=0,px=0;
+function hex(h){h=h.replace('#','');return[parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)]}
+function rgba(c,a){return'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')'}
+function mix(c,k,to){to=to==null?255:to;return c.map(function(v){return v+(to-v)*k})}
+var base=hex('#fff3d6'),liq=null,tint=hex('#ff9f1c');
+
+function size(){
+  var d=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+  [cb,cf].forEach(function(c){c.width=W*d;c.height=H*d;c.getContext('2d').setTransform(d,0,0,d,0,0)});
+  pos();
+}
+function pos(){var r=wrap.getBoundingClientRect();px=r.left+r.width/2;poolY=r.bottom-r.height*.16}
+addEventListener('resize',size);
+
+function wave(c,y0,amp,len,sp,ph,fill,line){
+  c.beginPath();
+  for(var x=0;x<=W+12;x+=12){
+    var y=y0+Math.sin(x/len+t*sp+ph)*amp+Math.sin(x/(len*.43)-t*sp*1.3)*amp*.35;
+    x?c.lineTo(x,y):c.moveTo(x,y);
+  }
+  if(line){c.strokeStyle=line;c.lineWidth=2.5;c.stroke()}
+  c.lineTo(W,H);c.lineTo(0,H);c.closePath();c.fillStyle=fill;c.fill();
+}
+
+var bubbles=[],drops=[];
+function seed(){bubbles.length=0;for(var i=0;i<(RM?0:34);i++)bubbles.push(nb(true))}
+var orbs=[];for(var i=0;i<9;i++)orbs.push({x:Math.random(),y:Math.random(),r:24+Math.random()*60,s:.15+Math.random()*.35,p:Math.random()*6});
+function nb(init){return{x:Math.random()*W||Math.random()*800,y:init?(poolY||400)+Math.random()*400:H+20,r:3+Math.random()*9,s:.5+Math.random()*1.4,p:Math.random()*6}}
+function splash(x,y,n,p){
+  if(RM)return;
+  for(var i=0;i<n;i++){var a=-Math.PI/2+(Math.random()-.5)*1.7,s=(3+Math.random()*7)*p;
+    drops.push({x:x+(Math.random()-.5)*60,y:y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:2+Math.random()*5,l:1})}
+}
+
+function frame(ts){
+  t=ts/1000;sv*=.93;
+  var amp=RM?0:12+Math.min(sv,38);
+  // carton tilt follows pointer + gentle roll from scrolling
+  tx+=(mx*16-tx)*.08;ty+=(my*10-ty)*.08;
+  carton.style.transform='perspective(900px) rotateY('+tx+'deg) rotateX('+(-ty)+'deg) rotateZ('+(Math.sin(t*.7)*1.5+sv*.1)+'deg)';
+  glare.setAttribute('x',Math.max(34,Math.min(132,64+mx*100)));
+  pos();
+
+  // BACK: sky of current juice + rising sweep + pool
+  b.clearRect(0,0,W,H);
+  b.fillStyle=rgba(base,1);b.fillRect(0,0,W,H);
+  var cur=base;
+  if(liq){
+    liq.l+=RM?1:(1.2-liq.l)*.032+.0015;
+    var y0=H*(1-liq.l);
+    wave(b,y0-amp*.9,amp*1.1,95,1.1,1.3,rgba(mix(liq.c,.3),.85),null);
+    wave(b,y0,amp,120,1.4,0,rgba(liq.c,1),'rgba(255,255,255,.45)');
+    if(!liq.hit&&y0<poolY){liq.hit=true;splash(px,poolY,38,1.3)}
+    if(liq.l>1.1){base=liq.c;liq=null}else cur=liq.c;
+  }
+  // pool the carton floats in: deeper shade with a bright crest
+  var pa=amp*.55,ph=mx*1.5;
+  wave(b,poolY,pa,150,.9,ph,'rgba(0,0,0,.16)','rgba(255,255,255,.5)');
+  // floating juice orbs drifting up through the scene
+  if(!RM)orbs.forEach(function(o){
+    var m=H+200,y=((o.y*H-t*o.s*40-scrollY*o.s*.25)%m+m)%m-100,x=o.x*W+Math.sin(t*o.s+o.p)*30;
+    var g=b.createRadialGradient(x-o.r*.3,y-o.r*.3,o.r*.1,x,y,o.r);
+    g.addColorStop(0,'rgba(255,255,255,.35)');g.addColorStop(.7,'rgba(255,255,255,.08)');g.addColorStop(1,'rgba(255,255,255,.22)');
+    b.beginPath();b.arc(x,y,o.r,0,7);b.fillStyle=g;b.fill();
+  });
+  // ripples spreading around the carton
+  if(!RM){
+    for(var k=0;k<3;k++){
+      var p=(t*.35+k/3)%1,rx=50+p*230;
+      b.beginPath();b.ellipse(px,poolY+4,rx,rx*.16,0,0,7);
+      b.strokeStyle='rgba(255,255,255,'+(.5*(1-p))+')';b.lineWidth=2.5*(1-p)+.5;b.stroke();
+    }
+  }
+
+  // FRONT: water over the carton's base, bubbles, droplets
+  f.clearRect(0,0,W,H);
+  wave(f,poolY+6,pa,150,.9,ph,'rgba(0,0,0,.2)','rgba(255,255,255,.6)');
+  var lite=mix(cur,.55);
+  bubbles.forEach(function(q,i){
+    q.y-=q.s+sv*.05;var x=q.x+Math.sin(t*1.5+q.p)*10;
+    if(q.y<poolY+8){splash(x,poolY,2,.35);bubbles[i]=nb(false);return}
+    f.beginPath();f.arc(x,q.y,q.r,0,7);f.strokeStyle='rgba(255,255,255,.55)';f.lineWidth=1.5;f.stroke();
+    f.fillStyle='rgba(255,255,255,.12)';f.fill();
+    f.beginPath();f.arc(x-q.r*.35,q.y-q.r*.35,q.r*.22,0,7);f.fillStyle='rgba(255,255,255,.8)';f.fill();
+  });
+  for(var i=drops.length-1;i>=0;i--){
+    var d=drops[i];d.vy+=.34;d.x+=d.vx;d.y+=d.vy;d.l-=.012;
+    if(d.l<=0||d.y>H+20){drops.splice(i,1);continue}
+    f.beginPath();f.ellipse(d.x,d.y,d.r*.8,d.r*(1+Math.min(Math.abs(d.vy)*.05,.7)),0,0,7);
+    f.fillStyle=rgba(lite,Math.min(1,d.l*1.6));f.fill();
+    f.strokeStyle='rgba(255,255,255,'+(d.l*.5)+')';f.lineWidth=1;f.stroke();
+  }
+  requestAnimationFrame(frame);
+}
+
+// flavour switching
+var dotsWrap=$('#dots'),dots=[],curIdx=-1,nx=$('#next'),mf=$('#mfill'),glare=$('#glare');
+secs.forEach(function(s,i){
+  var bt=document.createElement('button');bt.setAttribute('aria-label',s.dataset.name);
+  bt.addEventListener('click',function(){s.scrollIntoView({behavior:RM?'auto':'smooth'})});
+  dotsWrap.appendChild(bt);dots.push(bt);
+});
+function jig(){carton.classList.remove('jig');void carton.offsetWidth;carton.classList.add('jig')}
+function activate(i){
+  if(i===curIdx)return;var first=curIdx<0;curIdx=i;var d=secs[i].dataset;
+  root.style.setProperty('--bg',d.bg);root.style.setProperty('--ink',d.ink);
+  ['c1','c2','f1','f2'].forEach(function(k){root.style.setProperty('--'+k,d[k])});
+  art.setAttribute('class',d.art);
+  cname.textContent=d.name;cname.setAttribute('font-size',Math.min(26,Math.floor(112/(d.name.length*.7))));ctag.textContent=i?'Almarai juice':'Almarai';
+  secs.forEach(function(x,j){x.classList.toggle('on',j===i)});
+  dots.forEach(function(x,j){x.classList.toggle('on',j===i)});
+  nx.classList.toggle('hide',i===secs.length-1);nx.textContent=i<secs.length-1?'Next: '+secs[i+1].dataset.name+' ↓':'';
+  if(!first){
+    if(liq)base=liq.c;
+    liq={c:hex(d.bg),l:0,hit:false};
+    jig();
+  }
+}
+var io=new IntersectionObserver(function(es){
+  es.forEach(function(e){if(e.isIntersecting)activate(secs.indexOf(e.target))});
+},{rootMargin:'-45% 0px -45% 0px'});
+secs.forEach(function(s){io.observe(s)});
+
+// text split into animated letters / words
+document.querySelectorAll('.split').forEach(function(el){
+  var txt=el.textContent,word=el.dataset.by==='word';
+  el.setAttribute('aria-label',txt);el.textContent='';
+  (word?txt.split(' '):txt.split('')).forEach(function(p,i){
+    var s=document.createElement('span');s.className='ch';s.setAttribute('aria-hidden','true');
+    s.style.setProperty('--i',i);s.textContent=p;el.appendChild(s);
+    if(word)el.appendChild(document.createTextNode(' '));
+  });
+});
+
+// interaction
+var lastDrop=0;
+addEventListener('mousemove',function(e){
+  mx=e.clientX/W-.5;my=e.clientY/H-.5;
+  var n=performance.now();
+  if(!RM&&n-lastDrop>70){lastDrop=n;drops.push({x:e.clientX,y:e.clientY,vx:(Math.random()-.5)*2,vy:-1-Math.random()*2,r:1.5+Math.random()*2.5,l:.8})}
+});
+function prog(){mf.style.height=Math.min(100,Math.max(0,scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight)*100))+'%'}
+addEventListener('scroll',function(){sv=Math.min(60,sv+Math.abs(scrollY-lastY)*.5);lastY=scrollY;prog()},{passive:true});
+nx.addEventListener('click',function(){secs[Math.min(secs.length-1,curIdx+1)].scrollIntoView({behavior:RM?'auto':'smooth'})});
+wrap.addEventListener('click',function(){splash(px,poolY,30,1.2);jig()});
+$('#top').addEventListener('click',function(){scrollTo({top:0,behavior:RM?'auto':'smooth'})});
+
+// flavour-feel bars under each fact list
+secs.forEach(function(s){
+  if(!s.dataset.feel)return;
+  var v=s.dataset.feel.split(','),n=['Sweet','Tangy','Rich'],d=document.createElement('div');
+  d.className='feel';
+  d.innerHTML='<h3>Flavour feel</h3>'+n.map(function(k,i){return '<div class="bar" style="--v:'+v[i]+'%;--d:'+(1.3+i*.15)+'s"><span>'+k+'</span><i></i></div>'}).join('');
+  s.querySelector('.facts').insertAdjacentElement('afterend',d);
+});
+size();seed();activate(0);prog();
+if(!RM){
+  carton.classList.add('drop');
+  setTimeout(function(){splash(px,poolY,46,1.6)},720);
+  carton.addEventListener('animationend',function(){carton.classList.remove('drop')});
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
